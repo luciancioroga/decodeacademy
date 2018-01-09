@@ -17,7 +17,8 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-
+        setTitle("Gallery");
+        
         mPreview = findViewById(R.id.preview);
         mPreview.setOnClickListener(this);
         mResult = findViewById(R.id.result);

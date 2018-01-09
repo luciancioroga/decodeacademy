@@ -17,6 +17,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
+        setTitle("Preview");
 
         mBack1 = findViewById(R.id.back_1);
         mBack2 = findViewById(R.id.back_2);
