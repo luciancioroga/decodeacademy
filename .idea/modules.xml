@@ -4,9 +4,9 @@
     <modules>
       <module fileurl="file://D:\wevideo\decodeacademy\sesiunea-1\app.iml" filepath="D:\wevideo\decodeacademy\sesiunea-1\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/decodeacademy.iml" filepath="$PROJECT_DIR$/decodeacademy.iml" />
-      <module fileurl="file://D:\wevideo\decodeacademy\decodeacademy.iml" filepath="D:\wevideo\decodeacademy\decodeacademy.iml" />
       <module fileurl="file://$PROJECT_DIR$/sesiunea-1/sesiunea-1.iml" filepath="$PROJECT_DIR$/sesiunea-1/sesiunea-1.iml" />
       <module fileurl="file://$PROJECT_DIR$/sesiunea-2/sesiunea-2.iml" filepath="$PROJECT_DIR$/sesiunea-2/sesiunea-2.iml" />
+      <module fileurl="file://D:\wevideo\decodeacademy\sesiunea-2\sesiunea-2.iml" filepath="D:\wevideo\decodeacademy\sesiunea-2\sesiunea-2.iml" />
     </modules>
   </component>
 </project>
