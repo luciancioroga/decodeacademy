@@ -32,6 +32,17 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("result", mResultValue);
+    }
+
+    private void refresh() {
+        if (mResult != null)
+            mResult.setText("Result " + (mResultValue > 0 ? mResultValue : ""));
+    }
+
+    @Override
     public void onClick(View v) {
         if (v.getId() == R.id.preview) {
             Intent intent = new Intent(this, PreviewActivity.class);
@@ -46,16 +57,5 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
             mResultValue = resultCode;
             refresh();
         }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-        outState.putInt("result", mResultValue);
-    }
-
-    private void refresh() {
-        if (mResult != null)
-            mResult.setText("Result " + (mResultValue > 0 ? mResultValue : ""));
     }
 }
