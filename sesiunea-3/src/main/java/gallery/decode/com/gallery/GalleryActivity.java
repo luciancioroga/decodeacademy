@@ -2,9 +2,9 @@ package gallery.decode.com.gallery;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -14,14 +14,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.ICallback, View.OnClickListener {
-    public static final int REQUEST_TYPE = 1;
+    public static final int REQUEST_PREVIEW = 1;
+    public static final int REQUEST_CAMERA = 2;
 
     private static final String[] TITLES = {"Photos", "Videos"};
 
@@ -109,20 +109,25 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     @Override
     protected void onActivityResult(int requestCode, int result, Intent data) {
         super.onActivityResult(requestCode, result, data);
-        if (requestCode == REQUEST_TYPE && mPager != null)
+        if (requestCode == REQUEST_PREVIEW && mPager != null)
             mPager.setCurrentItem(result);
+        else if (requestCode == REQUEST_CAMERA && result == RESULT_OK)
+            Toast.makeText(this, "Camera done!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void preview(int type) {
         Intent intent = new Intent(this, PreviewActivity.class);
         intent.putExtra("type", type);
-        startActivityForResult(intent, REQUEST_TYPE);
+        startActivityForResult(intent, REQUEST_PREVIEW);
     }
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.btn_camera)
-            Toast.makeText(this, "We will open camera at this point", Toast.LENGTH_SHORT).show();
+        if (v.getId() == R.id.btn_camera) {
+            Intent camera = new Intent(mPager.getCurrentItem() == 0 ? MediaStore.ACTION_IMAGE_CAPTURE : MediaStore.ACTION_VIDEO_CAPTURE);
+            if (camera.resolveActivity(getPackageManager()) != null)
+                startActivityForResult(camera, REQUEST_CAMERA);
+        }
     }
 }
