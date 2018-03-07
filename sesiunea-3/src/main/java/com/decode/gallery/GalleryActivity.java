@@ -1,4 +1,4 @@
-package com.decode.gallery.com;
+package com.decode.gallery;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +18,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.decode.gallery.com.R;
 
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.ICallback, View.OnClickListener {
     public static final int REQUEST_PREVIEW = 1;

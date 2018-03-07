@@ -1,4 +1,4 @@
-package com.decode.gallery.com;
+package com.decode.gallery;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+
+import com.decode.gallery.com.R;
 
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.ICallback {
     public static final int REQUEST_TYPE = 1;

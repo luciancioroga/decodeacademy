@@ -1,4 +1,4 @@
-package com.decode.gallery.com;
+package com.decode.gallery;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -6,6 +6,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.decode.gallery.com.R;
 
 /**
  * Created by lucian.cioroga on 1/9/2018.
