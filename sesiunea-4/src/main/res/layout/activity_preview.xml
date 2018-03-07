@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="gallery.decode.com.gallery.PreviewActivity">
+    tools:context="com.decode.gallery.com.com.decode.gallery.PreviewActivity">
 
-    <gallery.decode.com.gallery.SquareRelativeLayout
+    <com.decode.gallery.SquareRelativeLayout
         android:id="@+id/preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
