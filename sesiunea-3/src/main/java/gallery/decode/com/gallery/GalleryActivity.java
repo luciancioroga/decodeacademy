@@ -23,7 +23,10 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     public static final int REQUEST_PREVIEW = 1;
     public static final int REQUEST_CAMERA = 2;
 
-    private static final String[] TITLES = {"Photos", "Videos"};
+    private static final Gallery[] GALLERIES = {
+            Gallery.create("Photos", GalleryFragment.TYPE_IMAGE, R.id.nav_photo),
+            Gallery.create("Videos", GalleryFragment.TYPE_VIDEO, R.id.nav_video),
+    };
 
     private TabLayout mTabs;
     private ViewPager mPager;
@@ -45,7 +48,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             public Fragment getItem(int position) {
                 Fragment fragment = new GalleryFragment();
                 Bundle arguments = new Bundle();
-                arguments.putInt("type", position);
+                arguments.putInt("type", GALLERIES[position].type);
                 fragment.setArguments(arguments);
                 return fragment;
             }
@@ -57,7 +60,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return TITLES[position];
+                return GALLERIES[position].label;
             }
         });
         mTabs.setupWithViewPager(mPager);
@@ -78,6 +81,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
                         // set item as selected to persist highlight
                         menuItem.setChecked(true);
                         mDrawer.closeDrawers();
+
                         onOptionsItemSelected(menuItem);
                         // Add code here to update the UI based on the item selected
                         // For example, swap UI fragments here
@@ -99,10 +103,12 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home)
             mDrawer.openDrawer(GravityCompat.START);
-        else if (item.getItemId() == R.id.nav_photo)
-            mPager.setCurrentItem(0);
-        else if (item.getItemId() == R.id.nav_video)
-            mPager.setCurrentItem(1);
+        for (int i = 0; i < GALLERIES.length; i++)
+            if (GALLERIES[i].action == item.getItemId()) {
+                mPager.setCurrentItem(i);
+                break;
+            }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -128,6 +134,20 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             Intent camera = new Intent(mPager.getCurrentItem() == 0 ? MediaStore.ACTION_IMAGE_CAPTURE : MediaStore.ACTION_VIDEO_CAPTURE);
             if (camera.resolveActivity(getPackageManager()) != null)
                 startActivityForResult(camera, REQUEST_CAMERA);
+        }
+    }
+
+    static class Gallery {
+        String label;
+        int type;
+        int action;
+
+        static Gallery create(String l, int t, int a) {
+            Gallery g = new Gallery();
+            g.label = l;
+            g.type = t;
+            g.action = a;
+            return g;
         }
     }
 }
