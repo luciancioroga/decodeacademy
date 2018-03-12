@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.decode.gallery.SquareRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="6dp"
+    android:paddingRight="6dp">
+
+    <ImageView
+        android:id="@+id/thumb"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:background="#333" />
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#77333333"
+        android:gravity="right"
+        android:padding="8dp"
+        android:text="This is a label"
+        android:textSize="10sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="#fff" />
+</com.decode.gallery.SquareRelativeLayout>
