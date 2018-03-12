@@ -55,7 +55,7 @@ public class Media {
         // Get relevant columns for use later.
         String[] projection = {
                 MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.DATE_ADDED,
-                MediaSto    re.Files.FileColumns.MEDIA_TYPE, MediaStore.Files.FileColumns.MIME_TYPE, MediaStore.Files.FileColumns.TITLE,
+                MediaStore.Files.FileColumns.MEDIA_TYPE, MediaStore.Files.FileColumns.MIME_TYPE, MediaStore.Files.FileColumns.TITLE,
                 MediaStore.Video.Media.DURATION};
 
         // Return only video and image metadata.
