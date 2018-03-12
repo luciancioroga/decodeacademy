@@ -29,7 +29,7 @@ public class GalleryFragment extends Fragment implements View.OnClickListener {
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
         mType = getArguments() != null ? getArguments().getInt("type", Media.TYPE_IMAGE) : Media.TYPE_IMAGE;
         mRecycler = root.findViewById(R.id.recycler);
-        mRecycler.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        mRecycler.setLayoutManager(new GridLayoutManager(getContext(), getResources().getInteger(R.integer.gallery_column_count)));
         mRecycler.setAdapter(new Adapter(mType));
         return root;
     }
