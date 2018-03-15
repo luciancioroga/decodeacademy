@@ -3,10 +3,12 @@ package com.decode.gallery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -21,10 +23,9 @@ import android.widget.Toast;
 
 import com.decode.gallery.com.R;
 
-public class GalleryActivity extends AppCompatActivity implements GalleryFragment.ICallback, View.OnClickListener {
+public class GalleryActivity extends AppCompatActivity implements GalleryFragment.IGallery, View.OnClickListener {
     public static final int REQUEST_PREVIEW = 1;
     public static final int REQUEST_CAMERA = 2;
-
     private static final Gallery[] GALLERIES = {
             Gallery.create("Photos", Media.TYPE_IMAGE, R.id.nav_photo),
             Gallery.create("Videos", Media.TYPE_VIDEO, R.id.nav_video),
@@ -96,6 +97,15 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == GalleryFragment.PERMISSION_REQUEST_STORAGE)
+            for (Fragment f : getSupportFragmentManager().getFragments())
+                f.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        else
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.gallery_menu, menu);
         return true;
@@ -128,6 +138,11 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
         Intent intent = new Intent(this, PreviewActivity.class);
 //        intent.putExtra("color", media.getColor());
         startActivityForResult(intent, REQUEST_PREVIEW);
+    }
+
+    @Override
+    public View getRoot() {
+        return mDrawer;
     }
 
     @Override

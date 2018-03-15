@@ -1,12 +1,14 @@
 package com.decode.gallery;
 
-import android.database.Cursor;
-import android.net.Uri;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.CursorLoader;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,9 +27,9 @@ import java.util.List;
  */
 
 public class GalleryFragment extends Fragment implements View.OnClickListener {
+    public final static int PERMISSION_REQUEST_STORAGE = 1;
     private int mType = 0;
     private RecyclerView mRecycler;
-    private Cursor mMediaCursor;
 
     public GalleryFragment() {
     }
@@ -39,38 +41,52 @@ public class GalleryFragment extends Fragment implements View.OnClickListener {
         mType = getArguments() != null ? getArguments().getInt("type", Media.TYPE_IMAGE) : Media.TYPE_IMAGE;
         mRecycler = root.findViewById(R.id.recycler);
         mRecycler.setLayoutManager(new GridLayoutManager(getContext(), getResources().getInteger(R.integer.gallery_column_count)));
-        mRecycler.setAdapter(new Adapter(mType));
+
+        requestPermission(new Runnable() {
+            @Override
+            public void run() {
+                load();
+            }
+        });
+
         return root;
     }
 
-    private void loadMediaCursor() {
-        if (mMediaCursor != null && !mMediaCursor.isClosed())
-            mMediaCursor.close();
+    private void load() {
+        mRecycler.setAdapter(new Adapter(mType));
+    }
 
-        // Get relevant columns for use later.
-        String[] projection = {
-                MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.DATE_ADDED,
-                MediaStore.Files.FileColumns.MEDIA_TYPE, MediaStore.Files.FileColumns.MIME_TYPE, MediaStore.Files.FileColumns.TITLE,
-                MediaStore.Video.Media.DURATION};
+    public void requestPermission(final Runnable callback) {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted. Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Snackbar.make(((IGallery) getActivity()).getRoot(), "Gallery requires access to your storage", Snackbar.LENGTH_INDEFINITE).setAction("GRANT", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_STORAGE);
+                    }
+                }).show();
+            } else
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_STORAGE);
+        } else
+            callback.run();
+    }
 
-        // Return only video and image metadata.
-        String selection = MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + (mType == Media.TYPE_IMAGE ? MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE : MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
-        Uri queryUri = MediaStore.Files.getContentUri("external");
-
-        CursorLoader cursorLoader = new CursorLoader(getContext(), queryUri, projection, selection, null, MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
-        mMediaCursor = cursorLoader.loadInBackground();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_REQUEST_STORAGE && grantResults.length > 0)
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[0] == PackageManager.PERMISSION_DENIED)
+                load();
     }
 
     @Override
     public void onClick(View view) {
         if (view.getTag() instanceof Media) {
-            if (getActivity() instanceof ICallback && !getActivity().isFinishing() && !getActivity().isDestroyed())
-                ((ICallback) getActivity()).preview((Media) view.getTag());
+            if (getActivity() instanceof IGallery && !getActivity().isFinishing() && !getActivity().isDestroyed())
+                ((IGallery) getActivity()).preview((Media) view.getTag());
         }
-    }
-
-    public interface ICallback {
-        void preview(Media media);
     }
 
     class Adapter extends RecyclerView.Adapter<ViewHolder> {
@@ -111,5 +127,11 @@ public class GalleryFragment extends Fragment implements View.OnClickListener {
             mName = itemView.findViewById(R.id.label);
             mThumb = itemView.findViewById(R.id.thumb);
         }
+    }
+
+    public interface IGallery {
+        void preview(Media media);
+
+        View getRoot();
     }
 }
