@@ -1,6 +1,7 @@
 package com.decode.gallery;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,7 +27,7 @@ import java.util.List;
  * Created by lucian.cioroga on 1/9/2018.
  */
 
-public class GalleryFragment extends Fragment implements View.OnClickListener {
+public class GalleryFragment extends Fragment implements View.OnClickListener, Permissions.Callback {
     public final static int PERMISSION_REQUEST_STORAGE = 1;
     private int mType = 0;
     private RecyclerView mRecycler;
@@ -41,44 +42,54 @@ public class GalleryFragment extends Fragment implements View.OnClickListener {
         mType = getArguments() != null ? getArguments().getInt("type", Media.TYPE_IMAGE) : Media.TYPE_IMAGE;
         mRecycler = root.findViewById(R.id.recycler);
         mRecycler.setLayoutManager(new GridLayoutManager(getContext(), getResources().getInteger(R.integer.gallery_column_count)));
-
-        requestPermission(new Runnable() {
-            @Override
-            public void run() {
-                load();
-            }
-        });
-
+        load();
         return root;
     }
 
     private void load() {
-        mRecycler.setAdapter(new Adapter(mType));
+        Permissions.check(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE, PERMISSION_REQUEST_STORAGE, this);
     }
 
-    public void requestPermission(final Runnable callback) {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted. Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                Snackbar.make(((IGallery) getActivity()).getRoot(), "Gallery requires access to your storage", Snackbar.LENGTH_INDEFINITE).setAction("GRANT", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_STORAGE);
-                    }
-                }).show();
-            } else
-                // No explanation needed; request the permission
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_STORAGE);
-        } else
-            callback.run();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Permissions.REQUEST_PERMISSION_SETTING)
+            load();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_STORAGE && grantResults.length > 0)
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[0] == PackageManager.PERMISSION_DENIED)
-                load();
+        if (requestCode == PERMISSION_REQUEST_STORAGE)
+            Permissions.onPermissionsRequestResult(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionNeedMoreInfo(String permission) {
+        Snackbar.make(((IGallery) getActivity()).getRoot(), "Gallery requires access to your storage", Snackbar.LENGTH_INDEFINITE).setAction("GRANT", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Permissions.request(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE, PERMISSION_REQUEST_STORAGE);
+            }
+        }).show();
+    }
+
+    @Override
+    public void onPermissionNeverAskAgain(String permission) {
+        Snackbar.make(((IGallery) getActivity()).getRoot(), "Gallery requires access to your storage", Snackbar.LENGTH_INDEFINITE).setAction("GRANT", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Permissions.settings(getActivity());
+            }
+        }).show();
+    }
+
+    @Override
+    public void onPermissionAllowed(String permission) {
+        mRecycler.setAdapter(new Adapter(mType));
+    }
+
+    @Override
+    public void onPermissionDenied(String permission) {
+        load();
     }
 
     @Override

@@ -98,10 +98,11 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == GalleryFragment.PERMISSION_REQUEST_STORAGE)
+        if (requestCode == GalleryFragment.PERMISSION_REQUEST_STORAGE) {
+            Permissions.reset();
             for (Fragment f : getSupportFragmentManager().getFragments())
                 f.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        else
+        } else
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -131,12 +132,14 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             mPager.setCurrentItem(result);
         else if (requestCode == REQUEST_CAMERA && result == RESULT_OK)
             Toast.makeText(this, "Camera done!", Toast.LENGTH_SHORT).show();
+        else if (requestCode == Permissions.REQUEST_PERMISSION_SETTING)
+            for (Fragment f : getSupportFragmentManager().getFragments())
+                f.onActivityResult(requestCode, result, data);
     }
 
     @Override
     public void preview(Media media) {
         Intent intent = new Intent(this, PreviewActivity.class);
-//        intent.putExtra("color", media.getColor());
         startActivityForResult(intent, REQUEST_PREVIEW);
     }
 
@@ -152,6 +155,12 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             if (camera.resolveActivity(getPackageManager()) != null)
                 startActivityForResult(camera, REQUEST_CAMERA);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Permissions.reset();
     }
 
     static class Gallery {
