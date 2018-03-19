@@ -64,6 +64,7 @@ public class Permissions {
     }
 
     public static void settings(Activity activity) {
+        mChecking = false;
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         Uri uri = Uri.fromParts("package", activity.getPackageName(), null);
         intent.setData(uri);
