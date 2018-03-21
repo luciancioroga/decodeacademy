@@ -1,7 +1,9 @@
 package com.decode.gallery;
 
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
@@ -22,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.transition.Explode;
 import android.transition.Fade;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +32,10 @@ import android.view.Window;
 import android.widget.Toast;
 
 import com.decode.gallery.com.R;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.IGallery, View.OnClickListener {
@@ -39,6 +45,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             Gallery.create("Photos", Media.TYPE_IMAGE, R.id.nav_photo),
             Gallery.create("Videos", Media.TYPE_VIDEO, R.id.nav_video),
     };
+    private static final String PREFERENCES_VISITS = "pref-visits";
 
     private TabLayout mTabs;
     private ViewPager mPager;
@@ -48,6 +55,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private FloatingActionButton mBtnCamera;
 
     private HashMap<String, Integer> mVisits;
+    private Gson mGson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +63,20 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
         super.onCreate(savedInstanceState);
 
-        mVisits = savedInstanceState != null ? ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits")) : new HashMap<String, Integer>();
+        mGson = new Gson();
+        if (savedInstanceState != null)
+            mVisits = ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits"));
+        else {
+            SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, MODE_PRIVATE);
+            try {
+                mVisits = mGson.fromJson(prefs.getString("visits", ""), new TypeToken<HashMap<String, Integer>>() {
+                }.getType());
+            } catch (Exception e) {
+            }
+
+            if (mVisits == null)
+                mVisits = new HashMap<>();
+        }
 
         setContentView(R.layout.activity_gallery);
         setTitle("Gallery");
@@ -195,6 +216,15 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     protected void onDestroy() {
         super.onDestroy();
         Permissions.reset();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, Context.MODE_PRIVATE);
+        prefs.edit().putString("visits", mGson.toJson(mVisits)).commit();
+        Log.d("Preferences", "wrote " + prefs.getString("visits", ""));
     }
 
     static class Gallery {
