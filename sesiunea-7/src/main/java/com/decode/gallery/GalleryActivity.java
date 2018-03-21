@@ -1,9 +1,12 @@
 package com.decode.gallery;
 
 import android.app.ActivityOptions;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
@@ -35,6 +38,11 @@ import com.decode.gallery.com.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
@@ -55,27 +63,46 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private FloatingActionButton mBtnCamera;
 
     private HashMap<String, Integer> mVisits;
-    private Gson mGson;
+    //    private Gson mGson;
+    private DB.Helper mDB;
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
 
         super.onCreate(savedInstanceState);
 
-        mGson = new Gson();
+//        mGson = new Gson();
+        mDB = new DB.Helper(this);
         if (savedInstanceState != null)
             mVisits = ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits"));
         else {
-            SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, MODE_PRIVATE);
-            try {
-                mVisits = mGson.fromJson(prefs.getString("visits", ""), new TypeToken<HashMap<String, Integer>>() {
-                }.getType());
-            } catch (Exception e) {
-            }
+//            SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, MODE_PRIVATE);
+//            try {
+//                mVisits = mGson.fromJson(prefs.getString("visits", ""), new TypeToken<HashMap<String, Integer>>() {
+//                }.getType());
+//            } catch (Exception e) {
+//            }
 
-            if (mVisits == null)
-                mVisits = new HashMap<>();
+//            try {
+//                File file = new File(getDir("data", MODE_PRIVATE), "map");
+//                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+//                mVisits = (HashMap<String, Integer>) inputStream.readObject();
+//                inputStream.close();
+//            } catch (Exception e) {
+//            }
+
+            mVisits = new HashMap<>();
+            SQLiteDatabase db = mDB.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT * FROM " + DB.Visit.Entry.TABLE_NAME, null);
+            if (cursor != null && cursor.getCount() > 0) {
+                cursor.moveToFirst();
+
+                do {
+                    mVisits.put(cursor.getString(cursor.getColumnIndex(DB.Visit.Entry.COLUMN_URL)), cursor.getInt(cursor.getColumnIndex(DB.Visit.Entry.COLUMN_VISITS)));
+                } while (cursor.moveToNext());
+            }
         }
 
         setContentView(R.layout.activity_gallery);
@@ -222,9 +249,28 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     protected void onPause() {
         super.onPause();
 
-        SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, Context.MODE_PRIVATE);
-        prefs.edit().putString("visits", mGson.toJson(mVisits)).commit();
-        Log.d("Preferences", "wrote " + prefs.getString("visits", ""));
+//        SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, Context.MODE_PRIVATE);
+//        prefs.edit().putString("visits", mGson.toJson(mVisits)).commit();
+//        Log.d("Preferences", "wrote " + prefs.getString("visits", ""));
+
+//        try {
+//            File file = new File(getDir("data", MODE_PRIVATE), "map");
+//            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+//            outputStream.writeObject(mVisits);
+//            outputStream.flush();
+//            outputStream.close();
+//        } catch (Exception e) {
+//        }
+
+        SQLiteDatabase db = mDB.getWritableDatabase();
+        for (String key : mVisits.keySet()) {
+            ContentValues values = new ContentValues();
+            values.put(DB.Visit.Entry.COLUMN_URL, key);
+            values.put(DB.Visit.Entry.COLUMN_VISITS, mVisits.get(key));
+
+            if (db.update(DB.Visit.Entry.TABLE_NAME, values, DB.Visit.Entry.COLUMN_URL + "= ?", new String[]{key}) <= 0)
+                db.insert(DB.Visit.Entry.TABLE_NAME, null, values);
+        }
     }
 
     static class Gallery {
