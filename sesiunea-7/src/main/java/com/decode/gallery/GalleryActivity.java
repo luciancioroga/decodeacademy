@@ -4,6 +4,7 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -54,7 +55,7 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
         super.onCreate(savedInstanceState);
 
-        mVisits = new HashMap<>();
+        mVisits = savedInstanceState != null ? ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits")) : new HashMap<String, Integer>();
 
         setContentView(R.layout.activity_gallery);
         setTitle("Gallery");
@@ -112,6 +113,12 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("visits", mVisits);
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == GalleryFragment.PERMISSION_REQUEST_STORAGE) {
             Permissions.reset();
@@ -145,7 +152,10 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
         super.onActivityResult(requestCode, result, data);
         if (requestCode == REQUEST_CAMERA && result == RESULT_OK)
             Toast.makeText(this, "Camera done!", Toast.LENGTH_SHORT).show();
-        else if (requestCode == Permissions.REQUEST_PERMISSION_SETTING || (requestCode == REQUEST_PREVIEW && result == RESULT_OK)) {
+        else if (requestCode == Permissions.REQUEST_PERMISSION_SETTING) {
+            for (Fragment f : getSupportFragmentManager().getFragments())
+                f.onActivityResult(requestCode, result, data);
+        } else if (requestCode == REQUEST_PREVIEW && result == RESULT_OK) {
             Media media = data.getParcelableExtra("media");
             int v = mVisits.containsKey(media.getUrl()) ? mVisits.get(media.getUrl()) : 0;
             mVisits.put(media.getUrl(), v + 1);
