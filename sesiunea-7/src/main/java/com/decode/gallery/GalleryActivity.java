@@ -29,6 +29,8 @@ import android.widget.Toast;
 
 import com.decode.gallery.com.R;
 
+import java.util.HashMap;
+
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.IGallery, View.OnClickListener {
     public static final int REQUEST_PREVIEW = 1;
     public static final int REQUEST_CAMERA = 2;
@@ -44,11 +46,15 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private NavigationView mNavigation;
     private FloatingActionButton mBtnCamera;
 
+    private HashMap<String, Integer> mVisits;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
 
         super.onCreate(savedInstanceState);
+
+        mVisits = new HashMap<>();
 
         setContentView(R.layout.activity_gallery);
         setTitle("Gallery");
@@ -139,9 +145,13 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
         super.onActivityResult(requestCode, result, data);
         if (requestCode == REQUEST_CAMERA && result == RESULT_OK)
             Toast.makeText(this, "Camera done!", Toast.LENGTH_SHORT).show();
-        else if (requestCode == Permissions.REQUEST_PERMISSION_SETTING || (requestCode == REQUEST_PREVIEW && result == RESULT_OK))
+        else if (requestCode == Permissions.REQUEST_PERMISSION_SETTING || (requestCode == REQUEST_PREVIEW && result == RESULT_OK)) {
+            Media media = data.getParcelableExtra("media");
+            int v = mVisits.containsKey(media.getUrl()) ? mVisits.get(media.getUrl()) : 0;
+            mVisits.put(media.getUrl(), v + 1);
             for (Fragment f : getSupportFragmentManager().getFragments())
                 f.onActivityResult(requestCode, result, data);
+        }
     }
 
     @Override
@@ -155,6 +165,11 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     @Override
     public View getRoot() {
         return mDrawer;
+    }
+
+    @Override
+    public int getVisits(Media media) {
+        return mVisits.containsKey(media.getUrl()) ? mVisits.get(media.getUrl()) : 0;
     }
 
     @Override

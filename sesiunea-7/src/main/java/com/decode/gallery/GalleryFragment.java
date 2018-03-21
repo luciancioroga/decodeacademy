@@ -31,10 +31,8 @@ public class GalleryFragment extends Fragment implements View.OnClickListener, P
     private int mType = 0;
     private RecyclerView mRecycler;
     private Adapter mAdapter;
-    private HashMap<String, Integer> mVisits;
 
     public GalleryFragment() {
-        mVisits = new HashMap<>();
     }
 
     @Nullable
@@ -56,10 +54,8 @@ public class GalleryFragment extends Fragment implements View.OnClickListener, P
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Permissions.REQUEST_PERMISSION_SETTING)
             load();
-        else if (requestCode == GalleryActivity.REQUEST_PREVIEW && resultCode == Activity.RESULT_OK) {
-            Media media = data.getParcelableExtra("media");
-            mAdapter.visit(media);
-        }
+        else if (requestCode == GalleryActivity.REQUEST_PREVIEW && resultCode == Activity.RESULT_OK)
+            mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -100,10 +96,29 @@ public class GalleryFragment extends Fragment implements View.OnClickListener, P
 
     @Override
     public void onClick(View view) {
-        if (view.getTag() instanceof Media) {
-            if (getActivity() instanceof IGallery && !getActivity().isFinishing() && !getActivity().isDestroyed())
-                ((IGallery) getActivity()).preview(view.findViewById(R.id.thumb), (Media) view.getTag());
-        }
+        if (view.getTag() instanceof Media)
+            root().preview(view.findViewById(R.id.thumb), (Media) view.getTag());
+    }
+
+    private IGallery root() {
+        if (getActivity() instanceof IGallery && !getActivity().isFinishing() && !getActivity().isDestroyed())
+            return (IGallery) getActivity();
+        else
+            return new IGallery() {
+                @Override
+                public void preview(View sharedElement, Media media) {
+                }
+
+                @Override
+                public View getRoot() {
+                    return null;
+                }
+
+                @Override
+                public int getVisits(Media media) {
+                    return 0;
+                }
+            };
     }
 
     class Adapter extends RecyclerView.Adapter<ViewHolder> {
@@ -130,24 +145,13 @@ public class GalleryFragment extends Fragment implements View.OnClickListener, P
 
             mThumbs.load((mType == Media.TYPE_IMAGE ? "file://" : "video:") + media.getUrl()).fit().centerInside().into(holder.mThumb);
 
-            holder.mVisits.setVisibility(mVisits.containsKey(media.getUrl()) ? View.VISIBLE : View.GONE);
-            holder.mVisits.setText("" + mVisits.get(media.getUrl()));
+            holder.mVisits.setVisibility(root().getVisits(media) > 0 ? View.VISIBLE : View.GONE);
+            holder.mVisits.setText("" + root().getVisits(media));
         }
 
         @Override
         public int getItemCount() {
             return mMedia.size();
-        }
-
-        public void visit(Media media) {
-            int v = mVisits.containsKey(media.getUrl()) ? mVisits.get(media.getUrl()) : 0;
-            mVisits.put(media.getUrl(), v + 1);
-
-            for (Media m : mMedia)
-                if (m.getUrl().equals(media.getUrl())) {
-                    notifyItemChanged(mMedia.indexOf(m));
-                    break;
-                }
         }
     }
 
@@ -168,5 +172,7 @@ public class GalleryFragment extends Fragment implements View.OnClickListener, P
         void preview(View sharedElement, Media media);
 
         View getRoot();
+
+        int getVisits(Media media);
     }
 }
