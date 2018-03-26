@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.decode.gallery.SquareRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="6dp"
+    android:paddingRight="6dp">
+
+    <ImageView
+        android:id="@+id/thumb"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#333"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#99000000"
+        android:ellipsize="end"
+        android:gravity="right"
+        android:maxLines="1"
+        android:padding="8dp"
+        android:shadowColor="#333"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="This is a label"
+        android:textColor="#fff"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/visits"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#55000000"
+        android:gravity="center"
+        android:padding="8dp"
+        android:shadowColor="#333"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="2"
+        android:textColor="#fff"
+        android:textSize="22sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/item_selector" />
+</com.decode.gallery.SquareRelativeLayout>
