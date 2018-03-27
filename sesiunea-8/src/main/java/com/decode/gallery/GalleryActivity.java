@@ -40,6 +40,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import io.fabric.sdk.android.Fabric;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -65,7 +66,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private FloatingActionButton mBtnCamera;
 
     private HashMap<String, Integer> mVisits;
-    //    private Gson mGson;
     private DB.Helper mDB;
 
     @Override
@@ -76,26 +76,10 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
 
-//        mGson = new Gson();
         mDB = new DB.Helper(this);
         if (savedInstanceState != null)
             mVisits = ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits"));
         else {
-//            SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, MODE_PRIVATE);
-//            try {
-//                mVisits = mGson.fromJson(prefs.getString("visits", ""), new TypeToken<HashMap<String, Integer>>() {
-//                }.getType());
-//            } catch (Exception e) {
-//            }
-
-//            try {
-//                File file = new File(getDir("data", MODE_PRIVATE), "map");
-//                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-//                mVisits = (HashMap<String, Integer>) inputStream.readObject();
-//                inputStream.close();
-//            } catch (Exception e) {
-//            }
-
             mVisits = new HashMap<>();
             SQLiteDatabase db = mDB.getReadableDatabase();
             Cursor cursor = db.rawQuery("SELECT * FROM " + DB.Visit.Entry.TABLE_NAME, null);

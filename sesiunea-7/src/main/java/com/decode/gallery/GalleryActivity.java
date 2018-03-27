@@ -63,7 +63,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private FloatingActionButton mBtnCamera;
 
     private HashMap<String, Integer> mVisits;
-    //    private Gson mGson;
     private DB.Helper mDB;
 
     @Override
@@ -73,32 +72,15 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
         super.onCreate(savedInstanceState);
 
-//        mGson = new Gson();
         mDB = new DB.Helper(this);
         if (savedInstanceState != null)
             mVisits = ((HashMap<String, Integer>) savedInstanceState.getSerializable("visits"));
         else {
-//            SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, MODE_PRIVATE);
-//            try {
-//                mVisits = mGson.fromJson(prefs.getString("visits", ""), new TypeToken<HashMap<String, Integer>>() {
-//                }.getType());
-//            } catch (Exception e) {
-//            }
-
-//            try {
-//                File file = new File(getDir("data", MODE_PRIVATE), "map");
-//                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-//                mVisits = (HashMap<String, Integer>) inputStream.readObject();
-//                inputStream.close();
-//            } catch (Exception e) {
-//            }
-
             mVisits = new HashMap<>();
             SQLiteDatabase db = mDB.getReadableDatabase();
             Cursor cursor = db.rawQuery("SELECT * FROM " + DB.Visit.Entry.TABLE_NAME, null);
             if (cursor != null && cursor.getCount() > 0) {
                 cursor.moveToFirst();
-
                 do {
                     mVisits.put(cursor.getString(cursor.getColumnIndex(DB.Visit.Entry.COLUMN_URL)), cursor.getInt(cursor.getColumnIndex(DB.Visit.Entry.COLUMN_VISITS)));
                 } while (cursor.moveToNext());
