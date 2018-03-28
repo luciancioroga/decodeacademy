@@ -22,6 +22,7 @@ import java.util.List;
 public class Media implements Parcelable {
     public static final int TYPE_IMAGE = 1;
     public static final int TYPE_VIDEO = 2;
+    public static final int TYPE_CLOUD = 3;
 
     private String mName;
     private int mType;

@@ -1,14 +1,18 @@
 package com.decode.gallery;
 
 import android.app.ActivityOptions;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -55,9 +59,8 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     private static final Gallery[] GALLERIES = {
             Gallery.create("Photos", Media.TYPE_IMAGE, R.id.nav_photo),
             Gallery.create("Videos", Media.TYPE_VIDEO, R.id.nav_video),
+            Gallery.create("Cloud", Media.TYPE_CLOUD, R.id.nav_photo),
     };
-    private static final String PREFERENCES_VISITS = "pref-visits";
-
     private TabLayout mTabs;
     private ViewPager mPager;
     private Toolbar mToolbar;
@@ -67,6 +70,9 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
 
     private HashMap<String, Integer> mVisits;
     private DB.Helper mDB;
+
+    private Cloud mCloud;
+    private boolean mBound = false;
 
     @Override
 
@@ -100,16 +106,19 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
         mPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
-                Fragment fragment = new GalleryFragment();
-                Bundle arguments = new Bundle();
-                arguments.putInt("type", GALLERIES[position].type);
-                fragment.setArguments(arguments);
-                return fragment;
+                if (position < 2) {
+                    Fragment fragment = new GalleryFragment();
+                    Bundle arguments = new Bundle();
+                    arguments.putInt("type", GALLERIES[position].type);
+                    fragment.setArguments(arguments);
+                    return fragment;
+                } else
+                    return new CloudGalleryFragment();
             }
 
             @Override
             public int getCount() {
-                return 2;
+                return 3;
             }
 
             @Override
@@ -151,6 +160,20 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable("visits", mVisits);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, Cloud.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(mConnection);
+        mBound = false;
     }
 
     @Override
@@ -236,19 +259,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     protected void onPause() {
         super.onPause();
 
-//        SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, Context.MODE_PRIVATE);
-//        prefs.edit().putString("visits", mGson.toJson(mVisits)).commit();
-//        Log.d("Preferences", "wrote " + prefs.getString("visits", ""));
-
-//        try {
-//            File file = new File(getDir("data", MODE_PRIVATE), "map");
-//            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-//            outputStream.writeObject(mVisits);
-//            outputStream.flush();
-//            outputStream.close();
-//        } catch (Exception e) {
-//        }
-
         SQLiteDatabase db = mDB.getWritableDatabase();
         for (String key : mVisits.keySet()) {
             ContentValues values = new ContentValues();
@@ -258,6 +268,11 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             if (db.update(DB.Visit.Entry.TABLE_NAME, values, DB.Visit.Entry.COLUMN_URL + "= ?", new String[]{key}) <= 0)
                 db.insert(DB.Visit.Entry.TABLE_NAME, null, values);
         }
+    }
+
+    private void onCloudReady() {
+        if (mCloud != null && mBound)
+            mCloud.fetch();
     }
 
     static class Gallery {
@@ -273,4 +288,21 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
             return g;
         }
     }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            Cloud.CloudBinder binder = (Cloud.CloudBinder) service;
+            mCloud = binder.getService();
+            mBound = true;
+            onCloudReady();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 }

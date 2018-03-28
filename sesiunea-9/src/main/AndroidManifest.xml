@@ -11,6 +11,8 @@
         android:maxSdkVersion="18" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -28,9 +30,12 @@
             </intent-filter>
         </activity>
         <activity android:name="com.decode.gallery.PreviewActivity" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="1c0c1f71d2f6f97e855a89ec0a1e56b32416c122" />
+
+        <service android:name="com.decode.gallery.Cloud" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

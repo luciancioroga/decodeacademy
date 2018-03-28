@@ -2,21 +2,16 @@ package com.decode.gallery;
 
 import android.app.ActivityOptions;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -24,10 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,18 +27,10 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.decode.gallery.v8.R;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
+import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Type;
-import java.util.HashMap;
 
 public class GalleryActivity extends AppCompatActivity implements GalleryFragment.IGallery, View.OnClickListener {
     public static final int REQUEST_PREVIEW = 1;
@@ -235,19 +218,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryFragmen
     @Override
     protected void onPause() {
         super.onPause();
-
-//        SharedPreferences prefs = getSharedPreferences(PREFERENCES_VISITS, Context.MODE_PRIVATE);
-//        prefs.edit().putString("visits", mGson.toJson(mVisits)).commit();
-//        Log.d("Preferences", "wrote " + prefs.getString("visits", ""));
-
-//        try {
-//            File file = new File(getDir("data", MODE_PRIVATE), "map");
-//            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-//            outputStream.writeObject(mVisits);
-//            outputStream.flush();
-//            outputStream.close();
-//        } catch (Exception e) {
-//        }
 
         SQLiteDatabase db = mDB.getWritableDatabase();
         for (String key : mVisits.keySet()) {
