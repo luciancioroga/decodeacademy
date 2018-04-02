@@ -16,56 +16,56 @@ import java.util.concurrent.Executors;
  * Created by lucian.cioroga on 3/28/2018.
  */
 public class Cloud extends Service {
-    public static final String ACTION_CLOUD = "com.decode.gallery.action-cloud";
+	public static final String ACTION_CLOUD = "com.decode.gallery.action-cloud";
 
-    private final IBinder mBinder = new CloudBinder();
-    private Executor mExecutor;
-    private DB.Helper mDB;
+	private final IBinder mBinder = new CloudBinder();
+	private Executor mExecutor;
+	private DB.Helper mDB;
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        mExecutor = Executors.newSingleThreadExecutor();
-        mDB = new DB.Helper(getApplicationContext());
-        return mBinder;
-    }
+	@Override
+	public IBinder onBind(Intent intent) {
+		mExecutor = Executors.newSingleThreadExecutor();
+		mDB = new DB.Helper(getApplicationContext());
+		return mBinder;
+	}
 
-    public class CloudBinder extends Binder {
-        Cloud getService() {
-            // Return this instance of Cloud so clients can call public methods
-            return Cloud.this;
-        }
-    }
+	public class CloudBinder extends Binder {
+		Cloud getService() {
+			// Return this instance of Cloud so clients can call public methods
+			return Cloud.this;
+		}
+	}
 
-    /**
-     * client methods
-     */
-    public void fetch() {
-        mExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                // 1. access api
-                // 2. interpret json
-                Photo[] photos = U.api("https://goo.gl/xATgGr", Photo[].class);
-                SQLiteDatabase db = mDB.getWritableDatabase();
+	/**
+	 * client methods
+	 */
+	public void fetch() {
+		mExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				// 1. access api
+				// 2. interpret json
+				Photo[] photos = U.api("https://goo.gl/xATgGr", Photo[].class);
+				SQLiteDatabase db = mDB.getWritableDatabase();
 
-                // 3. store to DB
-                db.execSQL(DB.CloudPhoto.SQL_DROP);
-                db.execSQL(DB.CloudPhoto.SQL_CREATE);
-                for (Photo p : photos) {
-                    ContentValues values = new ContentValues();
-                    values.put(DB.CloudPhoto.Entry.COLUMN_URL, p.url);
-                    values.put(DB.CloudPhoto.Entry.COLUMN_TITLE, p.title);
-                    db.insert(DB.CloudPhoto.Entry.TABLE_NAME, null, values);
-                }
+				// 3. store to DB
+				db.execSQL(DB.CloudPhoto.SQL_DROP);
+				db.execSQL(DB.CloudPhoto.SQL_CREATE);
+				for (Photo p : photos) {
+					ContentValues values = new ContentValues();
+					values.put(DB.CloudPhoto.Entry.COLUMN_URL, p.url);
+					values.put(DB.CloudPhoto.Entry.COLUMN_TITLE, p.title);
+					db.insert(DB.CloudPhoto.Entry.TABLE_NAME, null, values);
+				}
 
-                // 4. notify
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(ACTION_CLOUD));
-            }
-        });
-    }
+				// 4. notify
+				LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(ACTION_CLOUD));
+			}
+		});
+	}
 
-    private static class Photo {
-        public String url;
-        public String title;
-    }
+	private static class Photo {
+		public String url;
+		public String title;
+	}
 }
